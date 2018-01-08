@@ -41,23 +41,23 @@ int ec_key_public_key_to_bin(ecc_key   *ec_key,
                              uint8_t  **pubk,     // out (must free)
                              uint32_t  *pubk_len) // out
 {
-	uint8_t  x[4096];
-	uint32_t x_len = 4096;
-	uint8_t  y[4096];
-	uint32_t y_len = 4096;
+        uint8_t  x[4096];
+        uint32_t x_len = 4096;
+        uint8_t  y[4096];
+        uint32_t y_len = 4096;
 
-	if (wc_ecc_export_public_raw(ec_key, x, &x_len, y, &y_len) != 0)
-		err("Failed to export public key to binary\n");
+        if (wc_ecc_export_public_raw(ec_key, x, &x_len, y, &y_len) != 0)
+                err("Failed to export public key to binary\n");
 
-	*pubk_len = (1 + x_len + y_len);
+        *pubk_len = (1 + x_len + y_len);
 
-	if ((*pubk = malloc(*pubk_len)) == NULL)
-		err("Failed to allocate memory for the public key\n");
+        if ((*pubk = malloc(*pubk_len)) == NULL)
+                err("Failed to allocate memory for the public key\n");
 
-	memset(*pubk, 0, *pubk_len);
-	*(*pubk) = 4;
-	memcpy(*pubk + 1, x, x_len);
-	memcpy(*pubk + 1 + x_len, y, y_len);
+        memset(*pubk, 0, *pubk_len);
+        *(*pubk) = 4;
+        memcpy(*pubk + 1, x, x_len);
+        memcpy(*pubk + 1 + x_len, y, y_len);
 
         return 0;
 }
@@ -67,19 +67,19 @@ int ec_key_private_key_to_bin(ecc_key   *ec_key,
                               uint8_t  **privk,     // out (must free)
                               uint32_t  *privk_len) // out
 {
-	uint8_t  k[4096];
-	uint32_t k_len = 4096;
+        uint8_t  k[4096];
+        uint32_t k_len = 4096;
 
-	if (wc_ecc_export_private_only(ec_key, k, &k_len) != 0)
-		err("Failed to export private key to binary\n");
+        if (wc_ecc_export_private_only(ec_key, k, &k_len) != 0)
+                err("Failed to export private key to binary\n");
 
-	*privk_len = k_len;
+        *privk_len = k_len;
 
-	if ((*privk = malloc(*privk_len)) == NULL)
-		err("Failed to allocate memory for the private key\n");
+        if ((*privk = malloc(*privk_len)) == NULL)
+                err("Failed to allocate memory for the private key\n");
 
-	memset(*privk, 0, *privk_len);
-	memcpy(*privk, k, k_len);
+        memset(*privk, 0, *privk_len);
+        memcpy(*privk, k, k_len);
 
         return 0;
 }
@@ -93,31 +93,31 @@ int ecies_transmitter_generate_symkey(const int        curve,
                                       uint8_t        **skey,          // out (must free)
                                       uint32_t        *skey_len)      // out
 {
-	RNG       rng;
-	ecc_key   ec_key;
-	int       size;
+        RNG       rng;
+        ecc_key   ec_key;
+        int       size;
         ecc_point peer_pubk_point;
 
-	wc_InitRng(&rng);
-	wc_ecc_init(&ec_key);
+        wc_InitRng(&rng);
+        wc_ecc_init(&ec_key);
 
-	size = wc_ecc_get_curve_size_from_id(curve);
+        size = wc_ecc_get_curve_size_from_id(curve);
 
-	if (wc_ecc_make_key_ex(&rng, size, &ec_key, curve) != 0)
-		err("Failed to generate a new key on the curve\n");
+        if (wc_ecc_make_key_ex(&rng, size, &ec_key, curve) != 0)
+                err("Failed to generate a new key on the curve\n");
 
         /* Allocate a buffer to hold the shared symmetric key. */
         *skey_len = size;
         if ((*skey = malloc(*skey_len)) == NULL)
-		err("Failed to allocate memory for the symmetric key\n");
+                err("Failed to allocate memory for the symmetric key\n");
 
-	if (wc_ecc_import_point_der((uint8_t *)peer_pubk, peer_pubk_len,
-				    curve, &peer_pubk_point) != 0)
-		err("Failed to import public key to an EC point\n");
+        if (wc_ecc_import_point_der((uint8_t *)peer_pubk, peer_pubk_len,
+                                    curve, &peer_pubk_point) != 0)
+                err("Failed to import public key to an EC point\n");
 
-	if (wc_ecc_shared_secret_ex(&ec_key, &peer_pubk_point,
-				    *skey, skey_len) != 0)
-		err("Failed to generate a shared secret key\n");
+        if (wc_ecc_shared_secret_ex(&ec_key, &peer_pubk_point,
+                                    *skey, skey_len) != 0)
+                err("Failed to generate a shared secret key\n");
 
         /* Write the ephemeral key's public key to the output buffer. */
         ec_key_public_key_to_bin(&ec_key, epubk, epubk_len);
@@ -132,29 +132,29 @@ int ecies_transmitter_generate_symkey(const int        curve,
 
 /* (RX) Generate the shared symmetric key. */
 int ecies_receiver_generate_symkey(ecc_key         *ec_key,
-				   int              curve,
+                                   int              curve,
                                    const uint8_t   *peer_pubk,
                                    const uint32_t   peer_pubk_len,
                                    uint8_t        **skey,          // out (must free)
                                    uint32_t        *skey_len)      // out
 {
-	int       size;
+        int       size;
         ecc_point peer_pubk_point;
 
-	size = wc_ecc_get_curve_size_from_id(curve);
+        size = wc_ecc_get_curve_size_from_id(curve);
 
         /* Allocate a buffer to hold the shared symmetric key. */
         *skey_len = size;
         if ((*skey = malloc(*skey_len)) == NULL)
-		err("Failed to allocate memory for the symmetric key\n");
+                err("Failed to allocate memory for the symmetric key\n");
 
-	if (wc_ecc_import_point_der((uint8_t *)peer_pubk, peer_pubk_len,
-				    curve, &peer_pubk_point) != 0)
-		err("Failed to import public key to an EC point\n");
+        if (wc_ecc_import_point_der((uint8_t *)peer_pubk, peer_pubk_len,
+                                    curve, &peer_pubk_point) != 0)
+                err("Failed to import public key to an EC point\n");
 
-	if (wc_ecc_shared_secret_ex(ec_key, &peer_pubk_point,
-				    *skey, skey_len) != 0)
-		err("Failed to generate a shared secret key\n");
+        if (wc_ecc_shared_secret_ex(ec_key, &peer_pubk_point,
+                                    *skey, skey_len) != 0)
+                err("Failed to generate a shared secret key\n");
 
         return 0;
 }
@@ -163,7 +163,7 @@ int ecies_receiver_generate_symkey(ecc_key         *ec_key,
 int aes_gcm_256b_encrypt(uint8_t   *plaintext,
                          uint32_t   plaintext_len,
                          uint8_t   *skey,
-			 uint32_t   skey_len,
+                         uint32_t   skey_len,
                          uint8_t   *aad,
                          uint32_t   aad_len,
                          uint8_t  **iv,             // out (must free)
@@ -173,38 +173,38 @@ int aes_gcm_256b_encrypt(uint8_t   *plaintext,
                          uint8_t  **ciphertext,     // out (must free)
                          uint8_t   *ciphertext_len) // out
 {
-	RNG rng;
-	Aes aes;
+        RNG rng;
+        Aes aes;
 
-	wc_InitRng(&rng);
+        wc_InitRng(&rng);
 
-	wc_AesInit(&aes, NULL, 0);
+        wc_AesInit(&aes, NULL, 0);
 
         /* Allocate buffers for the IV, tag, and ciphertext. */
 
         *iv_len = 12;
         if ((*iv = malloc(*iv_len)) == NULL)
-		err("Failed to allocate memory for the IV\n");
+                err("Failed to allocate memory for the IV\n");
 
         *tag_len = 12;
         if ((*tag = malloc(*tag_len)) == NULL)
-		err("Failed to allocate memory for the auth tag\n");
+                err("Failed to allocate memory for the auth tag\n");
 
-	*ciphertext_len = plaintext_len;
+        *ciphertext_len = plaintext_len;
         if ((*ciphertext = malloc((plaintext_len + 0xf) & ~0xf)) == NULL)
-		err("Failed to allocate memory for the ciphertext\n");
+                err("Failed to allocate memory for the ciphertext\n");
 
-	if (wc_RNG_GenerateBlock(&rng, *iv, *iv_len) != 0)
-		err("Failed to gernate random IV\n");
+        if (wc_RNG_GenerateBlock(&rng, *iv, *iv_len) != 0)
+                err("Failed to gernate random IV\n");
 
-	if (wc_AesGcmSetKey(&aes, (const uint8_t *)skey, skey_len) != 0)
-		err("Failed to set AES-GCM key\n");
+        if (wc_AesGcmSetKey(&aes, (const uint8_t *)skey, skey_len) != 0)
+                err("Failed to set AES-GCM key\n");
 
-	if (wc_AesGcmEncrypt(&aes, *ciphertext, plaintext, plaintext_len,
-			     *iv, *iv_len, *tag, *tag_len, aad, aad_len) != 0)
-		err("Failed to encrypt data with AES-GCM\n");
+        if (wc_AesGcmEncrypt(&aes, *ciphertext, plaintext, plaintext_len,
+                             *iv, *iv_len, *tag, *tag_len, aad, aad_len) != 0)
+                err("Failed to encrypt data with AES-GCM\n");
 
-	wc_AesFree(&aes);
+        wc_AesFree(&aes);
 
         return 0;
 }
@@ -213,7 +213,7 @@ int aes_gcm_256b_encrypt(uint8_t   *plaintext,
 int aes_gcm_256b_decrypt(uint8_t   *ciphertext,
                          uint32_t   ciphertext_len,
                          uint8_t   *skey,
-			 uint32_t   skey_len,
+                         uint32_t   skey_len,
                          uint8_t   *aad,
                          uint32_t   aad_len,
                          uint8_t   *iv,
@@ -223,25 +223,25 @@ int aes_gcm_256b_decrypt(uint8_t   *ciphertext,
                          uint8_t  **plaintext,     // out (must free)
                          uint32_t  *plaintext_len) // out
 {
-	Aes aes;
+        Aes aes;
 
-	wc_AesInit(&aes, NULL, 0);
+        wc_AesInit(&aes, NULL, 0);
 
         /* Allocate a buffer for the plaintext. */
-	*plaintext_len = ciphertext_len;
+        *plaintext_len = ciphertext_len;
         if ((*plaintext = malloc(*plaintext_len)) == NULL)
-		err("Failed to allocate memory for the plaintext\n");
+                err("Failed to allocate memory for the plaintext\n");
 
-	if (wc_AesGcmSetKey(&aes, (const uint8_t *)skey, skey_len) != 0)
-		err("Failed to set AES-GCM key\n");
+        if (wc_AesGcmSetKey(&aes, (const uint8_t *)skey, skey_len) != 0)
+                err("Failed to set AES-GCM key\n");
 
-	if (wc_AesGcmDecrypt(&aes, *plaintext, ciphertext, ciphertext_len,
-			     iv, iv_len, tag, tag_len, aad, aad_len) != 0)
-		err("Failed to decrypt data with AES-GCM\n");
+        if (wc_AesGcmDecrypt(&aes, *plaintext, ciphertext, ciphertext_len,
+                             iv, iv_len, tag, tag_len, aad, aad_len) != 0)
+                err("Failed to decrypt data with AES-GCM\n");
 
-	wc_AesFree(&aes);
+        wc_AesFree(&aes);
 
-	return 0;
+        return 0;
 }
 
 int ecies_receiver_load_key(char      *filename,
@@ -252,25 +252,25 @@ int ecies_receiver_load_key(char      *filename,
                             uint8_t  **privk,     // out (must free)
                             uint32_t  *privk_len) // out
 {
-	uint8_t   buf[4096];
-	uint32_t  buf_len;
-	uint32_t  idx;
-	FILE     *file;
+        uint8_t   buf[4096];
+        uint32_t  buf_len;
+        uint32_t  idx;
+        FILE     *file;
 
-	wc_ecc_init(ec_key);
+        wc_ecc_init(ec_key);
 
-	if ((file = fopen(filename, "rb")) == NULL)
+        if ((file = fopen(filename, "rb")) == NULL)
                 err("Failed to read private EC key file '%s'\n", filename);
 
-	buf_len = fread(buf, 1, sizeof(buf), file);
-	fclose(file);
+        buf_len = fread(buf, 1, sizeof(buf), file);
+        fclose(file);
 
-	idx = 0;
-	if (wc_EccPrivateKeyDecode(buf, &idx, ec_key, buf_len) != 0)
+        idx = 0;
+        if (wc_EccPrivateKeyDecode(buf, &idx, ec_key, buf_len) != 0)
                 err("Failed to parse private EC key file '%s'\n", filename);
 
-	*curve = (ec_key->idx == -1) ? ec_key->dp->id :
-		                       wc_ecc_get_curve_id(ec_key->idx);
+        *curve = (ec_key->idx == -1) ? ec_key->dp->id :
+                                       wc_ecc_get_curve_id(ec_key->idx);
         log("%-10s: %s(%d)\n", "curve", wc_ecc_get_name(*curve), *curve);
 
         /* Get the EC key's public key in a binary array format. */
@@ -339,7 +339,7 @@ int ecies_transmitter_send_message(uint8_t        *msg,
 }
 
 int ecies_receiver_recv_message(ecc_key       *ec_key,
-				int            curve,
+                                int            curve,
                                 const uint8_t *peer_pubk,
                                 const uint8_t  peer_pubk_len,
                                 uint8_t       *iv,
@@ -359,7 +359,7 @@ int ecies_receiver_recv_message(ecc_key       *ec_key,
 
         /* Generate the shared symmetric key (receiver). */
         ecies_receiver_generate_symkey(ec_key, curve,
-				       peer_pubk, peer_pubk_len,
+                                       peer_pubk, peer_pubk_len,
                                        &skey, &skey_len);
         if (skey_len != 32)
                 err("Invalid symkey length %db (expecting 256b)\n",
@@ -372,7 +372,7 @@ int ecies_receiver_recv_message(ecc_key       *ec_key,
 
         /* Decrypt the data using 256b AES-GCM. */
         aes_gcm_256b_decrypt(ciphertext, ciphertext_len,
-			     skey, skey_len, NULL, 0,
+                             skey, skey_len, NULL, 0,
                              iv, iv_len, tag, tag_len,
                              &plaintext, &plaintext_len);
 
@@ -410,8 +410,8 @@ int main(int argc, char * argv[])
         uint8_t *ciphertext     = NULL;
         uint8_t  ciphertext_len = 0;
 
-	/* init wolfssl */
-	wolfSSL_Init();
+        /* init wolfssl */
+        wolfSSL_Init();
 
         if (argc != 2)
                 err("Must specify EC key file in DER format\n"
