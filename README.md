@@ -1,5 +1,5 @@
 
-# Elliptic Curve Integrated Encrypt Scheme (ECIES)
+# Elliptic Curve Integrated Encryption Scheme (ECIES)
 
 ## Introduction
 
