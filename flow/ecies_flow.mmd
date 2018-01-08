@@ -1,0 +1,17 @@
+%% compile: mermaid.js -c ecies_flow.cfg ecies_flow.mmd
+
+sequenceDiagram
+    participant Transmitter
+    participant Receiver
+    Transmitter ->>+ Receiver: get EC public key parameters
+    Note over Receiver: Load EC Key (public/private keys and curve name)
+    Receiver ->>- Transmitter: public key, curve name
+    Note over Transmitter: Generate ephemeral EC keypair on the curve
+    Note over Transmitter: Generate symmetric key (diffie-hellman primitive using ephemeral private key and receiver's public key)
+    Note over Transmitter: Generate random IV
+    Note over Transmitter: Encrypt data using AES-GCM (in: symmetric key, IV, plaintext) (out: auth tag, ciphertext)
+    Transmitter ->> Receiver: ephemeral public key, IV, auth tag, ciphertext
+    Note over Receiver: Generate symmetric key (diffie-hellman primitive using private key and transmitter's ephemeral public key)
+    Note over Receiver: Decrypt data using AES-GCM (in: symmetric key, IV, auth tag, ciphertext) (out: plaintext)
+    Note over Transmitter, Receiver: Both sides throw away all one-time use fields (public and private key from the transmitter's ephemeral keypair, symmetric key, IV, auth tag, ciphertext)
+
